@@ -33,8 +33,10 @@ export function GeoRoutingToggle({
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   const updateDestinationMutation = useMutation(
+    // Takes any changes and updates on trpc side
     trpc.links.updateLinkDestinations.mutationOptions({
       onSuccess: () => {
+        // When you invalidate data, you have to get fresh data
         queryClient.invalidateQueries({
           queryKey: trpc.links.getLink.queryKey({
             linkId,

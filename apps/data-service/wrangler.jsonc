@@ -9,6 +9,66 @@
 	"compatibility_date": "2025-06-17",
 	"compatibility_flags": ["nodejs_compat"],
 	"observability": {
-		"enabled": true,
+		"enabled": true
 	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_id": "0ead13da-9337-4196-b822-2e185f69f572",
+			"remote": true
+		}
+	],
+	"kv_namespaces": [
+		{
+			"binding": "CACHE",
+			// "id": "20dcbf2ece9e408bbd9f8d70e29958d2",
+			"preview_id": "20dcbf2ece9e408bbd9f8d70e29958d2",
+			"remote": true
+		}
+	],
+	"queues": {
+		// A queue can only have one consumer
+		"consumers": [
+			{
+				"queue": "smart-links-data-queue-stage",
+				// Default, queue tries 3 times until it throws msg away
+				// Useful if you wanna process that data in case it fails for one second for some reason
+				// Or if you don't want to keep pinging an API like for LLM, it can be expensive to keep trying
+				// "max_retries": 3,
+				// Time between tries
+				// "retry_delay": 5,
+				// Or...
+				// If we re-try until we hit the threshold, you can manage failed events
+				// When messages fail in the main queue, redirect them here
+				"dead_letter_queue": "smart-links-data-dead-letter-stage"
+			},
+			// Best to keep paused at all times
+			{
+				// Here's the actual queue that will receive those failed messages
+				// Binded
+				"queue": "smart-links-data-dead-letter-stage",
+				"retry_delay": 0
+			}
+		],
+		"producers": [
+			{
+				// Data should arrive on specific queue
+				"binding": "QUEUE",
+				"queue": "smart-links-data-queue-stage"
+			}
+		]
+	},
+	"workflows": [
+		{
+			"binding": "DESTINATION_EVALUATION_WORKFLOW",
+			"name": "destination-evaluation-workflow",
+			"class_name": "DestinationEvaluationWorkflow"
+		}
+	],
+	"browser": {
+		"binding": "VIRTUAL_BROWSER"
+	},
+	"ai": {
+		"binding": "AI"
+	}
 }

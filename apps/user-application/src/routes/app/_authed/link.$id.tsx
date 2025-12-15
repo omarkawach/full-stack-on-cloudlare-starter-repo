@@ -1,3 +1,4 @@
+// Dynamic variable of ID will be pulled
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import {

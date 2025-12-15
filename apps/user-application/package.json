@@ -65,11 +65,11 @@
     "vaul": "^1.1.2",
     "world-countries": "^5.1.0",
     "ws": "link:@trpc/server/adapters/ws",
-    "zod": "^3.25.67",
+    "zod": "^3.25.76",
     "zustand": "^5.0.6"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.13.2",
+    "@cloudflare/vite-plugin": "^1.15.3",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/react": "^16.3.0",
     "@types/react": "^19.1.8",
@@ -82,6 +82,6 @@
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4",
     "web-vitals": "^4.2.4",
-    "wrangler": "^4.37.1"
+    "wrangler": "^4.51.0"
   }
 }

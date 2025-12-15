@@ -14,6 +14,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Flag } from "lucide-react";
 
 export function TopCountriesTable() {
+  // Grab data from backend
   const { data: clicksByCountry } = useSuspenseQuery(
     trpc.links.clicksByCountry.queryOptions(),
   );

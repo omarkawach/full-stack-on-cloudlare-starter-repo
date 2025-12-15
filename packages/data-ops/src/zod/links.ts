@@ -8,6 +8,7 @@ export const destinationsSchema = z.preprocess(
     }
     return obj;
   },
+  // Another key-value pair Zod object
   z
     .object({
       default: z.string().url(),
@@ -17,6 +18,8 @@ export const destinationsSchema = z.preprocess(
 
 export type DestinationsSchemaType = z.infer<typeof destinationsSchema>;
 
+// Take this object as the input
+// Basically the table we defined in D1 but type safe
 export const linkSchema = z.object({
   linkId: z.string(),
   accountId: z.string(),

@@ -17,6 +17,7 @@ export function LinkNameEditor({ linkId, initialName }: LinkNameEditorProps) {
   const [name, setName] = useState(initialName);
 
   const nameMutation = useMutation(
+    // Used on a form submit
     trpc.links.updateLinkName.mutationOptions({
       onSettled: () => {
         queryClient.invalidateQueries({

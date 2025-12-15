@@ -24,8 +24,11 @@ function RouteComponent() {
   const [url, setUrl] = useState("");
   const nav = useNavigate();
 
+  // Function that calls server side code to save link information
   const createMutation = useMutation(
+    // From worker/trpc/routers/links.ts file
     trpc.links.createLink.mutationOptions({
+      // Navigate to specific link page
       onSuccess: (linkId) => {
         nav({
           to: "/app/link/$id",
@@ -99,6 +102,7 @@ function RouteComponent() {
             {/* Submit Button */}
             <div className="pt-6">
               <Button
+                // Frontend component calling the backend
                 onClick={() => {
                   createMutation.mutate({
                     name,

@@ -1,3 +1,4 @@
+// This is the page that loads after being authed
 import { createFileRoute } from "@tanstack/react-router";
 import {
   MetricsCards,
@@ -11,6 +12,9 @@ import { useClickSocket } from "@/hooks/clicks-socket";
 
 export const Route = createFileRoute("/app/_authed/")({
   component: RouteComponent,
+  // Tanstack router convention
+  // All this logic gets executed when the page loads
+  // Prefetching all data living behind a tRPC route 
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.prefetchQuery(

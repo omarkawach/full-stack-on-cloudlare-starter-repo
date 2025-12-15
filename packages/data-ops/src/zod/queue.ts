@@ -20,6 +20,7 @@ export const LinkClickMessageSchema = BaseQueueMessageSchema.extend({
   }),
 });
 
+// Data field will be somewhat dynamic but must conform to LinkClickMessageSchema
 export const QueueMessageSchema = z.discriminatedUnion("type", [
   LinkClickMessageSchema,
 ]);

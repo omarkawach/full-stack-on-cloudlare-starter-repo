@@ -28,8 +28,10 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/app/_authed/links")({
   component: RouteComponent,
+  // Pre fetches data from links list
   loader: async ({ context }) => {
     await context.queryClient.prefetchQuery(
+      // We need to wire the query from our backend
       context.trpc.links.linkList.queryOptions({}),
     );
   },
