@@ -1,4 +1,5 @@
 import puppeteer from '@cloudflare/puppeteer';
+import { base64 } from 'zod/v4';
 
 export async function collectDestinationInfo(env: Env, destinationUrl: string) {
 	const browser = await puppeteer.launch(env.VIRTUAL_BROWSER);
@@ -14,6 +15,10 @@ export async function collectDestinationInfo(env: Env, destinationUrl: string) {
 	// If a status is 404, you don't need to render through AI
 	const status = response ? response.status() : 0;
 
+	// Add screenshot capability
+	// const screenshot = await page.screenshot({ encoding: 'base64' });
+	// const screenshotDataUrl = `data:image/png;base64,${screenshot}`;
+
 	// Ensure you don't hit your 10 concurrent
 	await browser.close();
 	console.log('Collecting rendered destination page data');
@@ -21,5 +26,6 @@ export async function collectDestinationInfo(env: Env, destinationUrl: string) {
 		bodyText,
 		html,
 		status,
+		// screenshotDataUrl
 	};
 }

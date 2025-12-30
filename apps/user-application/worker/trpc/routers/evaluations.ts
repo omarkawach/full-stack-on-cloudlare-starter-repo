@@ -1,11 +1,17 @@
 import { t } from "@/worker/trpc/trpc-instance";
+import { TRPCError } from "@trpc/server";
 
 import { z } from "zod";
-import { EVALUATION_ISSUES, EVALUATIONS } from "./dummy-data";
+import {
+  getEvaluations,
+  getNotAvailableEvaluations,
+} from "@repo/data-ops/queries/evaluations";
 
 export const evaluationsTrpcRoutes = t.router({
-  problematicDestinations: t.procedure.query(async ({}) => {
-    return EVALUATION_ISSUES;
+  problematicDestinations: t.procedure.query(async ({ ctx }) => {
+    const userId = ctx.userInfo.userId;
+    if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+    return await getNotAvailableEvaluations(userId);
   }),
   recentEvaluations: t.procedure
     .input(
@@ -13,10 +19,13 @@ export const evaluationsTrpcRoutes = t.router({
         .object({
           createdBefore: z.string().optional(),
         })
-        .optional(),
+        .optional()
     )
-    .query(async ({}) => {
-      const evaluations = EVALUATIONS;
+    .query(async ({ ctx }) => {
+      const userId = ctx.userInfo.userId;
+      if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+
+      const evaluations = await getEvaluations(userId);
 
       const oldestCreatedAt =
         evaluations.length > 0

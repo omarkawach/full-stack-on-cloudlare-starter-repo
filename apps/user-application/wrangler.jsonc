@@ -7,18 +7,68 @@
   "name": "user-application",
   "main": "worker/index.ts",
   "compatibility_date": "2025-11-25",
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "binding": "ASSETS",
-    "not_found_handling": "single-page-application"
+    "not_found_handling": "single-page-application",
+    // Ensure worker runs first for these routes
+    "run_worker_first": ["/api/auth/*", "/trpc/*", "/click-socket"]
   },
   "observability": {
     "enabled": true
   },
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_id": "0ead13da-9337-4196-b822-2e185f69f572",
-      "remote": true
+  "env": {
+    "stage": {
+      // Env variables that aren't secret
+      // Easier than manually configuring in the Cloudflare dashboard each time
+      "vars": {
+
+      },
+      "routes": [
+        {
+          "custom_domain": true,
+          "pattern": "learning.omarkawach.com"
+        }
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_id": "0ead13da-9337-4196-b822-2e185f69f572",
+          "remote": true
+        }
+      ],
+      // Connect frontend application to our data service so we can proxy the websocket connection
+      // Instead of hardcoding the actual backend URL into our client code
+      // Specifies service bindings (Worker-to-Worker) that are bound to this Worker environment.
+      "services": [
+        {
+          "binding": "BACKEND_SERVICE",
+          // Connects to other wrangler.jsonc in /data-service as named there
+          "service": "data-service-stage"
+          // Use "remote": true only for production deployments
+          // For local dev, omit "remote" to use local service binding
+        }
+      ]
+    },
+    "production": {
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_id": "4a62184a-7221-4a80-926c-0afb2aa856ff"
+        }
+      ],
+      // Connect frontend application to our data service so we can proxy the websocket connection
+      // Instead of hardcoding the actual backend URL into our client code
+      // Specifies service bindings (Worker-to-Worker) that are bound to this Worker environment.
+      "services": [
+        {
+          "binding": "BACKEND_SERVICE",
+          // Connects to other wrangler.jsonc in /data-service as named there
+          "service": "data-service-production"
+          // Use "remote": true only for production deployments
+          // For local dev, omit "remote" to use local service binding
+        }
+      ]
     }
-  ]
+  }
 }

@@ -9,6 +9,7 @@ export function initDatabase(bindingDb: D1Database) {
   db = drizzle(bindingDb);
 }
 
+// Logic for extracting D1 DB
 export function getDb() {
   if (!db) {
     throw new Error("Database not initialized");

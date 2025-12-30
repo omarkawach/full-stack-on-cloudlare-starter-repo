@@ -5,25 +5,31 @@ import {
   destinationsSchema,
 } from "@repo/data-ops/zod-schema/links";
 import {
+  activeLinksLastHour,
   createLink,
+  getLast24And48HourClicks,
+  getLast30DaysClicks,
+  getLast30DaysClicksByCountry,
   getLink,
   getLinks,
+  totalLinkClickLastHour,
   updateLinkDestinations,
   updateLinkName,
 } from "@repo/data-ops/queries/links";
 
 import { TRPCError } from "@trpc/server";
-import { ACTIVE_LINKS_LAST_HOUR, LAST_30_DAYS_BY_COUNTRY } from "./dummy-data";
 
 export const linksTrpcRoutes = t.router({
   linkList: t.procedure
     .input(
       z.object({
-        offset: z.number().optional(), // actual date time
+        offset: z.number().optional(),
       })
     )
     .query(async ({ ctx, input }) => {
-      return await getLinks(ctx.userInfo.userId, input.offset?.toString());
+      const userId = ctx.userInfo.userId;
+      if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+      return await getLinks(userId, input.offset?.toString());
     }),
   // Specific mutation
   // Use Zod to define input data (from data-ops package), i.e., createLinkSchema
@@ -33,8 +39,11 @@ export const linksTrpcRoutes = t.router({
   createLink: t.procedure
     .input(createLinkSchema)
     .mutation(async ({ ctx, input }) => {
+      const userId = ctx.userInfo.userId;
+      if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+
       const linkId = await createLink({
-        accountId: ctx.userInfo.userId, // provided by auth
+        accountId: userId,
         ...input,
       });
       return linkId;
@@ -84,23 +93,29 @@ export const linksTrpcRoutes = t.router({
       console.log(input.linkId, input.destinations);
       await updateLinkDestinations(input.linkId, input.destinations);
     }),
-  activeLinks: t.procedure.query(async () => {
-    return ACTIVE_LINKS_LAST_HOUR;
+  activeLinks: t.procedure.query(async ({ ctx }) => {
+    const userId = ctx.userInfo.userId;
+    if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+    return await activeLinksLastHour(userId);
   }),
-  totalLinkClickLastHour: t.procedure.query(async () => {
-    return 13;
+  totalLinkClickLastHour: t.procedure.query(async ({ ctx }) => {
+    const userId = ctx.userInfo.userId;
+    if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+    return await totalLinkClickLastHour(userId);
   }),
-  last24HourClicks: t.procedure.query(async () => {
-    return {
-      last24Hours: 56,
-      previous24Hours: 532,
-      percentChange: 12,
-    };
+  last24HourClicks: t.procedure.query(async ({ ctx }) => {
+    const userId = ctx.userInfo.userId;
+    if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+    return await getLast24And48HourClicks(userId);
   }),
-  last30DaysClicks: t.procedure.query(async () => {
-    return 78;
+  last30DaysClicks: t.procedure.query(async ({ ctx }) => {
+    const userId = ctx.userInfo.userId;
+    if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+    return await getLast30DaysClicks(userId);
   }),
-  clicksByCountry: t.procedure.query(async () => {
-    return LAST_30_DAYS_BY_COUNTRY;
+  clicksByCountry: t.procedure.query(async ({ ctx }) => {
+    const userId = ctx.userInfo.userId;
+    if (!userId) throw new TRPCError({ code: "UNAUTHORIZED" });
+    return await getLast30DaysClicksByCountry(userId);
   }),
 });

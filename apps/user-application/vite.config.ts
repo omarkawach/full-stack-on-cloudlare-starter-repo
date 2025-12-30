@@ -18,7 +18,9 @@ export default defineConfig({
     tanstackRouter({ autoCodeSplitting: true }),
     viteReact(),
     tailwindcss(),
-    // Not clear from the docs
+    // Configure Cloudflare bindings
+    // Use remoteBindings: false for local development with WebSockets
+    // Use remoteBindings: true only for production/staging remote testing
     cloudflare({
       remoteBindings: true,
     }),

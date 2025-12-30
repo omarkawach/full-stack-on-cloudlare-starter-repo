@@ -6,6 +6,9 @@ import { handleLinkClick } from './queue-handlers/link-clicks';
 
 export { DestinationEvaluationWorkflow } from '@/workflows/destination-evaluation-workflow';
 
+export { EvaluationScheduler} from "@/durable-objects/evaluation-scheduler";
+export { LinkClickTracker } from "@/durable-objects/link-click-tracker";
+
 // Entry point to data service / worker
 // Class based approach is cleaner than worker/index.ts
 // Gives you access to constructor instead of exporting each function
@@ -13,7 +16,10 @@ export default class DataService extends WorkerEntrypoint<Env> {
 	// Execute whenever worker is triggered
 	constructor(ctx: ExecutionContext, env: Env) {
 		super(ctx, env);
+		// This constructor is called when the specific workflow is spun up for the first time and runs code based on trigger
 		initDatabase(env.DB);
+		// However this constructor wont be called when our other workflows are triggered
+		// So initDatabase in destination-evaluation-workflow as well
 	}
 	// A trigger which can invoke worker runtime
 	fetch(request: Request) {

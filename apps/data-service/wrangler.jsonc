@@ -11,64 +11,197 @@
 	"observability": {
 		"enabled": true
 	},
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_id": "0ead13da-9337-4196-b822-2e185f69f572",
-			"remote": true
-		}
-	],
-	"kv_namespaces": [
-		{
-			"binding": "CACHE",
-			// "id": "20dcbf2ece9e408bbd9f8d70e29958d2",
-			"preview_id": "20dcbf2ece9e408bbd9f8d70e29958d2",
-			"remote": true
-		}
-	],
-	"queues": {
-		// A queue can only have one consumer
-		"consumers": [
-			{
-				"queue": "smart-links-data-queue-stage",
-				// Default, queue tries 3 times until it throws msg away
-				// Useful if you wanna process that data in case it fails for one second for some reason
-				// Or if you don't want to keep pinging an API like for LLM, it can be expensive to keep trying
-				// "max_retries": 3,
-				// Time between tries
-				// "retry_delay": 5,
-				// Or...
-				// If we re-try until we hit the threshold, you can manage failed events
-				// When messages fail in the main queue, redirect them here
-				"dead_letter_queue": "smart-links-data-dead-letter-stage"
+	"env": {
+		"stage": {
+			"routes": [
+				{
+					"custom_domain": true,
+					"pattern": "go-stage.omarkawach.com"
+				}
+			],
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_id": "0ead13da-9337-4196-b822-2e185f69f572",
+					"remote": true
+				}
+			],
+			"kv_namespaces": [
+				{
+					"binding": "CACHE",
+					// "id": "20dcbf2ece9e408bbd9f8d70e29958d2",
+					"preview_id": "20dcbf2ece9e408bbd9f8d70e29958d2",
+					"remote": true
+				}
+			],
+			"queues": {
+				// A queue can only have one consumer
+				"consumers": [
+					{
+						"queue": "smart-links-data-queue-stage",
+						// Default, queue tries 3 times until it throws msg away
+						// Useful if you wanna process that data in case it fails for one second for some reason
+						// Or if you don't want to keep pinging an API like for LLM, it can be expensive to keep trying
+						// "max_retries": 3,
+						// Time between tries
+						// "retry_delay": 5,
+						// Or...
+						// If we re-try until we hit the threshold, you can manage failed events
+						// When messages fail in the main queue, redirect them here
+						"dead_letter_queue": "smart-links-data-dead-letter-stage"
+					},
+					// Best to keep paused at all times
+					{
+						// Here's the actual queue that will receive those failed messages
+						// Binded
+						"queue": "smart-links-data-dead-letter-stage",
+						"retry_delay": 0
+					}
+				],
+				"producers": [
+					{
+						// Data should arrive on specific queue
+						"binding": "QUEUE",
+						"queue": "smart-links-data-queue-stage"
+					}
+				]
 			},
-			// Best to keep paused at all times
-			{
-				// Here's the actual queue that will receive those failed messages
-				// Binded
-				"queue": "smart-links-data-dead-letter-stage",
-				"retry_delay": 0
-			}
-		],
-		"producers": [
-			{
-				// Data should arrive on specific queue
-				"binding": "QUEUE",
-				"queue": "smart-links-data-queue-stage"
-			}
-		]
-	},
-	"workflows": [
-		{
-			"binding": "DESTINATION_EVALUATION_WORKFLOW",
-			"name": "destination-evaluation-workflow",
-			"class_name": "DestinationEvaluationWorkflow"
+			"workflows": [
+				{
+					"binding": "DESTINATION_EVALUATION_WORKFLOW",
+					"name": "destination-evaluation-workflow",
+					"class_name": "DestinationEvaluationWorkflow"
+				}
+			],
+			"browser": {
+				"binding": "VIRTUAL_BROWSER"
+			},
+			"ai": {
+				"binding": "AI"
+			},
+			"r2_buckets": [
+				{
+					"binding": "BUCKET",
+					"bucket_name": "smart-links-eval-stage",
+					"remote": true
+				}
+			],
+			"durable_objects": {
+				"bindings": [
+					{
+						"class_name": "LinkClickTracker",
+						"name": "LINK_CLICK_TRACKER_OBJECT"
+					},
+					{
+						"name": "EVALUATION_SCHEDULAR",
+						"class_name": "EvaluationScheduler"
+					}
+				]
+			},
+			// Only needs to be done the first time you deploy your DOs
+			// Review documentation for this
+			"migrations": [
+				{
+					"tag": "v1",
+					"new_classes": ["EvaluationScheduler"]
+				},
+				{
+					"tag": "v2",
+					// Notice new_sqlite_classes when a DO is SQLite backed
+					"new_sqlite_classes": ["LinkClickTracker"]
+				}
+			]
+		},
+		"production": {
+			"d1_databases": [
+				{
+					"binding": "DB",
+					"database_id": "4a62184a-7221-4a80-926c-0afb2aa856ff",
+				}
+			],
+			"kv_namespaces": [
+				{
+					"binding": "CACHE",
+					"id": "9d0bdd30c2974d48a460230dce509cdd",
+					// "preview_id": "9d0bdd30c2974d48a460230dce509cdd",
+				}
+			],
+			"queues": {
+				// A queue can only have one consumer
+				"consumers": [
+					{
+						"queue": "smart-links-data-queue-production",
+						// Default, queue tries 3 times until it throws msg away
+						// Useful if you wanna process that data in case it fails for one second for some reason
+						// Or if you don't want to keep pinging an API like for LLM, it can be expensive to keep trying
+						// "max_retries": 3,
+						// Time between tries
+						// "retry_delay": 5,
+						// Or...
+						// If we re-try until we hit the threshold, you can manage failed events
+						// When messages fail in the main queue, redirect them here
+						"dead_letter_queue": "smart-links-data-dead-letter-production"
+					},
+					// Best to keep paused at all times
+					{
+						// Here's the actual queue that will receive those failed messages
+						// Binded
+						"queue": "smart-links-data-dead-letter-production",
+						"retry_delay": 0
+					}
+				],
+				"producers": [
+					{
+						// Data should arrive on specific queue
+						"binding": "QUEUE",
+						"queue": "smart-links-data-queue-production"
+					}
+				]
+			},
+			"workflows": [
+				{
+					"binding": "DESTINATION_EVALUATION_WORKFLOW",
+					"name": "destination-evaluation-workflow",
+					"class_name": "DestinationEvaluationWorkflow"
+				}
+			],
+			"browser": {
+				"binding": "VIRTUAL_BROWSER"
+			},
+			"ai": {
+				"binding": "AI"
+			},
+			"r2_buckets": [
+				{
+					"binding": "BUCKET",
+					"bucket_name": "smart-links-eval-production",
+				}
+			],
+			"durable_objects": {
+				"bindings": [
+					{
+						"class_name": "LinkClickTracker",
+						"name": "LINK_CLICK_TRACKER_OBJECT"
+					},
+					{
+						"name": "EVALUATION_SCHEDULAR",
+						"class_name": "EvaluationScheduler"
+					}
+				]
+			},
+			// Only needs to be done the first time you deploy your DOs
+			// Review documentation for this
+			"migrations": [
+				{
+					"tag": "v1",
+					"new_classes": ["EvaluationScheduler"]
+				},
+				{
+					"tag": "v2",
+					// Notice new_sqlite_classes when a DO is SQLite backed
+					"new_sqlite_classes": ["LinkClickTracker"]
+				}
+			]
 		}
-	],
-	"browser": {
-		"binding": "VIRTUAL_BROWSER"
-	},
-	"ai": {
-		"binding": "AI"
 	}
 }
